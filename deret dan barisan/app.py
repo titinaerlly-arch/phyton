@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 st.set_page_config(layout="wide", page_title="Virtual Lab Deret dan Barisan")
 
 st.title("🔢 Virtual Lab Deret & Barisan Interaktif")
-st.markdown("Eksplorasi Barisan Aritmatika dan Geometri, serta perhitungan Deretnya.")
+st.markdown("Eksplorasi **Barisan Aritmatika** (pertumbuhan linear) dan **Barisan Geometri** (pertumbuhan eksponensial), serta perhitungan Deretnya.")
 
 # --- Sidebar untuk Pengaturan Utama ---
 st.sidebar.title("⚙️ Pengaturan Barisan")
@@ -27,6 +27,7 @@ if sequence_type == "Aritmatika":
     b = diff_or_ratio
     
 elif sequence_type == "Geometri":
+    # Untuk Geometri, faktor skala (rasio) sangat sensitif. Batas 2.0 agar grafik tetap terlihat baik.
     diff_or_ratio = st.sidebar.slider("Rasio (r)", -2.0, 2.0, 1.5)
     r = diff_or_ratio
 
@@ -80,10 +81,6 @@ with col1:
     ax_u.grid(True, linestyle=':', alpha=0.7)
     ax_u.legend()
     st.pyplot(fig_u)
-    
-
-[Image of geometric sequence and arithmetic sequence plots for comparison showing linear and exponential growth]
-
 
 
 with col2:
@@ -109,7 +106,8 @@ data = {
     f'Un (Suku ke-{sequence_type})': np.round(U_n, 4),
     f'Sn (Jumlah Deret)': np.round(S_n, 4)
 }
-df_results = st.dataframe(data, height=300)
+# Pastikan data frame ditampilkan di layar
+st.dataframe(data, height=300)
 
 # 2. Rumus dan Penjelasan
 st.subheader("Rumus Utama")
@@ -117,18 +115,18 @@ st.subheader("Rumus Utama")
 if sequence_type == "Aritmatika":
     st.markdown(f"**Barisan Aritmatika** (Beda, $b = {b}$)")
     st.latex(f"U_n = a + (n-1)b \\rightarrow U_n = {a} + (n-1){b}")
-    st.latex(f"S_n = \\frac{{n}}{{2}} (a + U_n) \\text{ atau } S_n = \\frac{{n}}{{2}} (2a + (n-1)b)")
+    st.latex(f"S_n = \\frac{{n}}{{2}} (a + U_n) \\text{{ atau }} S_n = \\frac{{n}}{{2}} (2a + (n-1)b)")
 
 elif sequence_type == "Geometri":
     st.markdown(f"**Barisan Geometri** (Rasio, $r = {r}$)")
     st.latex(f"U_n = a \\cdot r^{{n-1}} \\rightarrow U_n = {a} \\cdot ({r})^{{n-1}}")
-    st.latex(f"S_n = \\frac{{a(r^n - 1)}}{{r-1}} \\text{ untuk } r \\ne 1")
+    st.latex(f"S_n = \\frac{{a(r^n - 1)}}{{r-1}} \\text{{ untuk }} r \\ne 1")
     
     # Konvergensi untuk Geometri Tak Hingga
     if np.abs(r) < 1:
         S_inf = a / (1 - r)
         st.subheader("Deret Geometri Tak Hingga (Konvergen)")
-        st.info(f"Karena $|r| = |{r}| < 1$, deret ini **Konvergen** (memiliki jumlah tak hingga).")
+        st.info(f"Karena $|r| = |{r}| < 1$, deret ini **Konvergen** (memiliki jumlah tak hingga yang terbatas).")
         st.latex(f"S_\\infty = \\frac{{a}}{{1-r}} = \\frac{{{a}}}{{1 - ({r})}} = {np.round(S_inf, 4)}")
         
     else:
