@@ -120,10 +120,10 @@ def solve_and_plot(a1, b1, c1, a2, b2, c2):
 
 # --- Visualisasi dan Output Hasil ---
 
-st.header("Visualisasi Geometris") # <--- BARIS INI KINI AMAN KARENA SEMUA VARIABEL DI ATASNYA SUDAH DIDEFINISIKAN
+st.header("Visualisasi Geometris") 
+
 
 D, Dx, Dy, solution_type, explanation = solve_and_plot(a1, b1, c1, a2, b2, c2)
-
 
 st.header("📚 Analisis Hasil")
 
@@ -150,4 +150,15 @@ st.latex(f"A = \\begin{{pmatrix}} {a1} & {b1} \\\\ {a2} & {b2} \\end{{pmatrix}}"
 
 # Tampilkan Determinan
 st.markdown(f"**Determinan Utama (D):**")
-st.latex(f"
+st.latex(f"D = a_1b_2 - a_2b_1 = ({a1})({b2}) - ({a2})({b1}) = {D:.2f}")
+
+st.markdown(f"**Determinan Variabel (Dx dan Dy):**")
+st.latex(f"D_x = c_1b_2 - c_2b_1 = {Dx:.2f}")
+st.latex(f"D_y = a_1c_2 - a_2c_1 = {Dy:.2f}")
+
+st.markdown("---")
+st.markdown("**Kesimpulan Aturan Cramer:**\n"
+    "* Jika $D \\ne 0$, ada satu solusi (Garis Berpotongan).\n"
+    "* Jika $D = 0$ dan ($D_x \\ne 0$ atau $D_y \\ne 0$), tidak ada solusi (Garis Sejajar).\n"
+    "* Jika $D = D_x = D_y = 0$, ada solusi tak hingga (Garis Berimpit)."
+)
