@@ -29,10 +29,10 @@ c2 = st.sidebar.number_input("Konstanta $c_2$", value=2.0)
 
 # Penanganan kasus ekstrem untuk plotting (menghindari error division by zero yang tidak relevan)
 if b1 == 0 and a1 == 0:
-    st.sidebar.warning("a1 dan b1 tidak boleh nol bersamaan!")
+    st.sidebar.warning("a1 dan b1 tidak boleh nol bersamaan! Nilai a1 diatur ke 1.")
     a1 = 1
 if b2 == 0 and a2 == 0:
-    st.sidebar.warning("a2 dan b2 tidak boleh nol bersamaan!")
+    st.sidebar.warning("a2 dan b2 tidak boleh nol bersamaan! Nilai a2 diatur ke 1.")
     a2 = 1
 
 
@@ -62,18 +62,18 @@ def solve_and_plot(a1, b1, c1, a2, b2, c2):
         solution_type = "Solusi Tunggal"
         explanation = f"Determinan $D \\ne 0$. Kedua garis berpotongan pada satu titik: **({sol_x:.2f}, {sol_y:.2f})**."
         
-        # Plot Garis 1 (selalu berupa garis lurus)
+        # Plot Garis 1 
         if b1 != 0:
             y1 = (c1 - a1 * x) / b1
             ax.plot(x, y1, 'b-', label=f'Garis 1: {a1}x + {b1}y = {c1}')
-        else:
+        else: # Garis vertikal x = c1/a1
             ax.axvline(c1 / a1, color='blue', linestyle='-', label=f'Garis 1: x = {c1/a1:.2f}')
             
         # Plot Garis 2
         if b2 != 0:
             y2 = (c2 - a2 * x) / b2
             ax.plot(x, y2, 'r--', label=f'Garis 2: {a2}x + {b2}y = {c2}')
-        else:
+        else: # Garis vertikal x = c2/a2
             ax.axvline(c2 / a2, color='red', linestyle='--', label=f'Garis 2: x = {c2/a2:.2f}')
             
         # Plot titik perpotongan (Solusi)
@@ -117,50 +117,8 @@ def solve_and_plot(a1, b1, c1, a2, b2, c2):
     ax.legend(loc='upper right')
     
     st.pyplot(fig)
-    
+    # Tag untuk gambar visualisasi 
     
     return D, Dx, Dy, solution_type, explanation
 
-# --- Visualisasi dan Output Hasil ---
-
-st.header("Visualisasi Geometris")
-
-D, Dx, Dy, solution_type, explanation = solve_and_plot(a1, b1, c1, a2, b2, c2)
-
-st.header("📚 Analisis Hasil")
-
-col_a, col_b = st.columns([1, 2])
-
-with col_a:
-    st.subheader("Jenis Solusi")
-    if solution_type == "Solusi Tunggal":
-        st.success(f"**{solution_type}**")
-    elif solution_type == "Tidak Ada Solusi":
-        st.error(f"**{solution_type}**")
-    else:
-        st.warning(f"**{solution_type}**")
-
-with col_b:
-    st.subheader("Penjelasan Geometris")
-    st.info(explanation)
-
-st.subheader("Matriks dan Determinan (Aturan Cramer)")
-
-# Tampilkan Matriks Koefisien A
-st.markdown("**Matriks Koefisien (A):**")
-st.latex(f"A = \\begin{{pmatrix}} {a1} & {b1} \\\\ {a2} & {b2} \\end{{pmatrix}}")
-
-# Tampilkan Determinan
-st.markdown(f"**Determinan Utama (D):**")
-st.latex(f"D = a_1b_2 - a_2b_1 = ({a1})({b2}) - ({a2})({b1}) = {D:.2f}")
-
-st.markdown(f"**Determinan Variabel (Dx dan Dy):**")
-st.latex(f"D_x = c_1b_2 - c_2b_1 = {Dx:.2f}")
-st.latex(f"D_y = a_1c_2 - a_2c_1 = {Dy:.2f}")
-
-st.markdown("---")
-st.markdown("**Kesimpulan Aturan Cramer:**")
-st.markdown(
-    "* Jika $D \\ne 0$, ada satu solusi (Garis Berpotongan).\n"
-    "* Jika $D = 0$ dan ($D_x \\ne 0$ atau $D_y \\ne 0$), tidak ada solusi (Garis Sejajar).\n"
-    "* Jika $D = D_x
+# --- Visual
