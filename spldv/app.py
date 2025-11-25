@@ -1,7 +1,7 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.stats import norm
+from scipy.stats import norm # Modul ini yang butuh scipy di requirements.txt
 
 # --- Konfigurasi Halaman Streamlit ---
 st.set_page_config(layout="wide", page_title="Virtual Lab Distribusi Normal")
@@ -23,9 +23,8 @@ num_samples = st.sidebar.slider("Jumlah Sampel Simulasi", 100, 5000, 1000) # Jum
 
 def plot_distributions(mu, sigma, n, N):
     
-    # 1. Distribusi Populasi (Kurva Normal Asli)
+    # 1. Setup Plotting Space
     x = np.linspace(mu - 4*sigma, mu + 4*sigma, 1000)
-    # y_pop = norm.pdf(x, mu, sigma) 
     
     # 2. Simulasi Pengambilan Sampel (Distribusi Rata-rata Sampel)
     sample_means = []
@@ -70,6 +69,10 @@ def plot_distributions(mu, sigma, n, N):
 # --- Bagian Utama Streamlit ---
 
 st.header("Visualisasi Simulasi Sampling")
+
+
+[Image of a bell-shaped curve showing normal distribution with mean and standard deviation labeled]
+
 
 # Jalankan simulasi dan plot
 sample_means, SE = plot_distributions(mu, sigma, sample_size, num_samples)
