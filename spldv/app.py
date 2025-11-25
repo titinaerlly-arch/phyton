@@ -1,164 +1,105 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.stats import norm
 
 # --- Konfigurasi Halaman Streamlit ---
-st.set_page_config(layout="wide", page_title="Virtual Lab SPLDV Interaktif")
+st.set_page_config(layout="wide", page_title="Virtual Lab Distribusi Normal")
 
-st.title("📐 Virtual Lab Sistem Persamaan Linear Dua Variabel (SPLDV)")
-st.markdown("Ubah koefisien di sidebar untuk melihat efeknya pada grafik, jenis solusi, dan determinan matriks.")
+st.title("🔔 Virtual Lab Distribusi Normal & Teorema Limit Pusat")
+st.markdown("Eksplorasi bagaimana ukuran sampel memengaruhi distribusi rata-rata sampel.")
 
-# --- Sidebar untuk Input Koefisien (INTERAKTIF) ---
-st.sidebar.title("⚙️ Input Persamaan")
+# --- Sidebar Input Parameter ---
+st.sidebar.title("⚙️ Parameter Populasi")
+mu = st.sidebar.slider("Rata-rata Populasi (μ)", 0, 100, 50)
+sigma = st.sidebar.slider("Simpangan Baku Populasi (σ)", 1, 20, 10)
 
-# Persamaan 1: a1x + b1y = c1
-st.sidebar.header("Persamaan 1: $a_1x + b_1y = c_1$")
-a1 = st.sidebar.slider("Koefisien $a_1$", -5, 5, 2)
-b1 = st.sidebar.slider("Koefisien $b_1$", -5, 5, 1)
-c1 = st.sidebar.number_input("Konstanta $c_1$", value=4.0)
+st.sidebar.markdown("---")
+st.sidebar.subheader("🔬 Parameter Sampling")
+sample_size = st.sidebar.slider("Ukuran Sampel (n)", 2, 100, 5) # Ukuran n
+num_samples = st.sidebar.slider("Jumlah Sampel Simulasi", 100, 5000, 1000) # Jumlah pengulangan
 
-# Persamaan 2: a2x + b2y = c2
-st.sidebar.header("Persamaan 2: $a_2x + b_2y = c_2$")
-a2 = st.sidebar.slider("Koefisien $a_2$", -5, 5, 1)
-b2 = st.sidebar.slider("Koefisien $b_2$", -5, 5, -1)
-c2 = st.sidebar.number_input("Konstanta $c_2$", value=2.0)
+# --- Fungsi Plotting dan Simulasi ---
 
-# Penanganan kasus ekstrem untuk plotting (menghindari division by zero)
-if b1 == 0 and a1 == 0:
-    st.sidebar.warning("a1 dan b1 tidak boleh nol bersamaan! Nilai a1 diatur ke 1.")
-    a1 = 1
-if b2 == 0 and a2 == 0:
-    st.sidebar.warning("a2 dan b2 tidak boleh nol bersamaan! Nilai a2 diatur ke 1.")
-    a2 = 1
-
-
-# --- Fungsi Penyelesaian dan Plotting ---
-
-def solve_and_plot(a1, b1, c1, a2, b2, c2):
+def plot_distributions(mu, sigma, n, N):
     
-    # 1. Hitung Determinan Matriks (Aturan Cramer)
-    D = a1 * b2 - a2 * b1
-    Dx = c1 * b2 - c2 * b1
-    Dy = a1 * c2 - a2 * c1
+    # 1. Distribusi Populasi (Kurva Normal Asli)
+    x = np.linspace(mu - 4*sigma, mu + 4*sigma, 1000)
+    # y_pop = norm.pdf(x, mu, sigma) 
     
-    # 2. Setup Plotting
-    fig, ax = plt.subplots(figsize=(8, 8))
-    x = np.linspace(-10, 10, 400) # Rentang nilai X untuk plotting
-    
-    # Inisialisasi
-    solution_type = "Tidak Diketahui"
-    explanation = "Silakan ubah koefisien untuk memulai analisis."
-    
-    # --- Analisis Jenis Solusi ---
-    
-    if D != 0:
-        # **A. Solusi Tunggal (Garis Berpotongan)**
-        sol_x = Dx / D
-        sol_y = Dy / D
-        solution_type = "Solusi Tunggal"
-        explanation = f"Determinan $D \\ne 0$. Kedua garis berpotongan pada satu titik: **({sol_x:.2f}, {sol_y:.2f})**."
+    # 2. Simulasi Pengambilan Sampel (Distribusi Rata-rata Sampel)
+    sample_means = []
+    for _ in range(N):
+        # Ambil sampel dari populasi normal
+        sample = np.random.normal(loc=mu, scale=sigma, size=n)
+        sample_means.append(np.mean(sample))
         
-        # Plot Garis 1 
-        if b1 != 0:
-            y1 = (c1 - a1 * x) / b1
-            ax.plot(x, y1, 'b-', label=f'Garis 1: {a1}x + {b1}y = {c1}')
-        else:
-            ax.axvline(c1 / a1, color='blue', linestyle='-', label=f'Garis 1: x = {c1/a1:.2f}')
-            
-        # Plot Garis 2
-        if b2 != 0:
-            y2 = (c2 - a2 * x) / b2
-            ax.plot(x, y2, 'r--', label=f'Garis 2: {a2}x + {b2}y = {c2}')
-        else:
-            ax.axvline(c2 / a2, color='red', linestyle='--', label=f'Garis 2: x = {c2/a2:.2f}')
-            
-        # Plot titik perpotongan (Solusi)
-        ax.plot(sol_x, sol_y, 'ko', markersize=8, label='Titik Solusi')
-        ax.text(sol_x + 0.3, sol_y, f'({sol_x:.2f}, {sol_y:.2f})', color='black', fontsize=10)
+    sample_means = np.array(sample_means)
+    
+    # Simpangan Baku Rata-rata Sampel (Standard Error)
+    SE = sigma / np.sqrt(n)
+    
+    # --- Visualisasi ---
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    # Plot Histogram Rata-rata Sampel
+    ax.hist(sample_means, bins=30, density=True, alpha=0.6, color='skyblue', label=f'Rata-rata Sampel (n={n})')
+    
+    # Plot Kurva Normal Rata-rata Sampel (sesuai CLT)
+    y_clt = norm.pdf(x, mu, SE)
+    ax.plot(x, y_clt, 'red', linewidth=2, label=f'Kurva Teoritis (SE={SE:.2f})')
+    
+    # Plot Kurva Populasi (untuk perbandingan lebar)
+    y_pop = norm.pdf(x, mu, sigma)
+    ax.plot(x, y_pop, 'black', linestyle='--', alpha=0.5, label=f'Populasi (σ={sigma})')
 
-    elif D == 0 and (Dx != 0 or Dy != 0):
-        # **B. Tidak Ada Solusi (Garis Sejajar)**
-        solution_type = "Tidak Ada Solusi"
-        explanation = "Determinan $D = 0$ tetapi $D_x \\ne 0$ atau $D_y \\ne 0$. Kedua garis **Sejajar** dan tidak pernah berpotongan."
-        
-        # Plot kedua garis sejajar
-        if b1 != 0:
-            y1 = (c1 - a1 * x) / b1
-            ax.plot(x, y1, 'b-', label=f'Garis 1: {a1}x + {b1}y = {c1}')
-        if b2 != 0:
-            y2 = (c2 - a2 * x) / b2
-            ax.plot(x, y2, 'r--', label=f'Garis 2: {a2}x + {b2}y = {c2}')
-        
-    elif D == 0 and Dx == 0 and Dy == 0:
-        # **C. Solusi Tak Hingga (Garis Berimpit)**
-        solution_type = "Solusi Tak Hingga"
-        explanation = "Determinan $D = D_x = D_y = 0$. Kedua persamaan adalah kelipatan satu sama lain. Garis **Berimpit**."
-        
-        # Plot garis berimpit
-        if b1 != 0:
-            y1 = (c1 - a1 * x) / b1
-            ax.plot(x, y1, 'b-', label='Garis Berimpit (Garis 1)')
-            ax.plot(x, y1, 'r--', alpha=0.5, label='Garis Berimpit (Garis 2)') 
-        
-    # Pengaturan Plot Umum
-    ax.axhline(0, color='gray', linewidth=0.5)
-    ax.axvline(0, color='gray', linewidth=0.5)
-    ax.set_xlim(-10, 10)
-    ax.set_ylim(-10, 10)
-    ax.set_aspect('equal', adjustable='box')
-    ax.grid(True, linestyle=':', alpha=0.6)
-    ax.set_title(f"Visualisasi SPLDV: {solution_type}")
-    ax.set_xlabel("Sumbu X")
-    ax.set_ylabel("Sumbu Y")
+    
+    # Pengaturan Grafik
+    ax.set_title(f'Distribusi Rata-rata Sampel vs. Populasi (N={N} kali simulasi)')
+    ax.set_xlabel('Nilai Rata-rata')
+    ax.set_ylabel('Probabilitas Densitas')
+    ax.axvline(mu, color='green', linestyle='-', linewidth=1.5, label=f'μ = {mu}')
     ax.legend(loc='upper right')
+    ax.grid(axis='y', alpha=0.5)
     
     st.pyplot(fig)
-    # Penting: Tutup plot Matplotlib agar tidak terjadi bug rendering
-    plt.close(fig) 
-    
-    return D, Dx, Dy, solution_type, explanation
+    plt.close(fig) # Tutup figure Matplotlib
 
-# --- Visualisasi dan Output Hasil ---
+    return sample_means, SE
 
-st.header("Visualisasi Geometris") 
+# --- Bagian Utama Streamlit ---
+
+st.header("Visualisasi Simulasi Sampling")
+
+# Jalankan simulasi dan plot
+sample_means, SE = plot_distributions(mu, sigma, sample_size, num_samples)
 
 
-D, Dx, Dy, solution_type, explanation = solve_and_plot(a1, b1, c1, a2, b2, c2)
+st.header("📊 Hasil Analisis Teorema Limit Pusat (CLT)")
 
-st.header("📚 Analisis Hasil")
+col1, col2, col3 = st.columns(3)
 
-col_a, col_b = st.columns([1, 2])
+with col1:
+    st.subheader("Populasi")
+    st.metric("Rata-rata Teoritis (μ)", f"{mu}")
+    st.metric("Simpangan Baku (σ)", f"{sigma}")
 
-with col_a:
-    st.subheader("Jenis Solusi")
-    if solution_type == "Solusi Tunggal":
-        st.success(f"**{solution_type}**")
-    elif solution_type == "Tidak Ada Solusi":
-        st.error(f"**{solution_type}**")
-    else:
-        st.warning(f"**{solution_type}**")
+with col2:
+    st.subheader("Rata-rata Sampel")
+    st.metric(f"Ukuran Sampel (n)", f"{sample_size}")
+    st.metric(f"Rata-rata Histogram ($\overline{{\mu}}$)", f"{np.mean(sample_means):.2f}")
 
-with col_b:
-    st.subheader("Penjelasan Geometris")
-    st.info(explanation)
 
-st.subheader("Matriks dan Determinan (Aturan Cramer)")
+with col3:
+    st.subheader("Efek Ukuran Sampel")
+    st.info(f"Semakin besar **Ukuran Sampel ($n$)**, semakin kecil **Standard Error** (SE).")
+    st.metric("Standard Error (SE)", f"{SE:.2f}")
+    st.latex(f"SE = \\frac{{\\sigma}}{{\\sqrt{{n}}}} = \\frac{{{sigma}}}{{\\sqrt{{{sample_size}}}}} = {SE:.2f}")
 
-# Tampilkan Matriks Koefisien A
-st.markdown("**Matriks Koefisien (A):**")
-st.latex(f"A = \\begin{{pmatrix}} {a1} & {b1} \\\\ {a2} & {b2} \\end{{pmatrix}}")
-
-# Tampilkan Determinan
-st.markdown(f"**Determinan Utama (D):**")
-st.latex(f"D = a_1b_2 - a_2b_1 = ({a1})({b2}) - ({a2})({b1}) = {D:.2f}")
-
-st.markdown(f"**Determinan Variabel (Dx dan Dy):**")
-st.latex(f"D_x = c_1b_2 - c_2b_1 = {Dx:.2f}")
-st.latex(f"D_y = a_1c_2 - a_2c_1 = {Dy:.2f}")
 
 st.markdown("---")
-st.markdown("**Kesimpulan Aturan Cramer:**\n"
-    "* Jika $D \\ne 0$, ada satu solusi (Garis Berpotongan).\n"
-    "* Jika $D = 0$ dan ($D_x \\ne 0$ atau $D_y \\ne 0$), tidak ada solusi (Garis Sejajar).\n"
-    "* Jika $D = D_x = D_y = 0$, ada solusi tak hingga (Garis Berimpit)."
+st.subheader("Kesimpulan CLT:")
+st.markdown(
+    "1. **Bentuk Distribusi:** Saat $n$ meningkat, histogram rata-rata sampel akan semakin menyerupai **Kurva Normal**, bahkan jika populasi aslinya tidak normal (walaupun kita menggunakan populasi normal di sini).\n"
+    "2. **Akurasi:** Saat $n$ meningkat, **Standard Error (SE)** menurun, menyebabkan kurva rata-rata sampel menjadi **lebih ramping dan tinggi** di sekitar $\mu$. Ini menunjukkan bahwa rata-rata sampel lebih akurat mencerminkan rata-rata populasi."
 )
